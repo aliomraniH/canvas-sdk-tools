@@ -1,0 +1,16 @@
+# Replit Reserved VM B — canvas-sdk-tools (Tier 3, Canvas-only MCP).
+# Static / offline / stateless.  No database, no Canvas credentials.
+run = "python -m canvas_sdk_tools"
+entrypoint = "src/canvas_sdk_tools/__main__.py"
+modules = ["python-3.11"]
+
+[deployment]
+run = ["python", "-m", "canvas_sdk_tools"]
+deploymentTarget = "vm"
+
+[[ports]]
+localPort = 8000
+externalPort = 80
+
+[env]
+PYTHONPATH = "src"

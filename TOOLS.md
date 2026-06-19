@@ -1,9 +1,10 @@
 # `canvas-sdk-tools` — Tool & Reference-Data Specification
 
-> **Status: SPEC — not yet implemented.** This document is the spec-and-stop
-> deliverable. It defines the five MCP tools, exactly what each one checks, the
-> evidence each returns, and the on-disk format of the vendored `reference/`
-> data they check against. Implementation begins only after approval.
+> **Status: IMPLEMENTED.** This document defines the five MCP tools, exactly
+> what each one checks, the evidence each returns, and the on-disk format of the
+> vendored `reference/` data they check against. The server, the analyzers, the
+> `reference/sdk_0.169.x/` data (generated from `canvas-plugins@0.169.1`), the
+> fixtures, and CI are all in the repo.
 
 Tier-3 Canvas-only MCP from `REUSABILITY.md`. This is the **Canvas SDK static
 analyzer** service that runs on Replit Reserved VM **B**. Canvas-named tools are
@@ -34,8 +35,8 @@ directory by the `sdk_version` argument.
 
 ```
 reference/
-  sdk_0.163.x/
-    VERSION                 # exact pinned tag the data was generated from, e.g. "0.163.4"
+  sdk_0.169.x/
+    VERSION                 # exact pinned tag the data was generated from, e.g. "0.169.1"
     PROVENANCE.md           # source commit/tag URLs + generation date + how to regenerate
     capability_catalog.json # events, data models, effect types, handler base classes
     fhir_rules.json         # allowed FHIR interactions per resource
@@ -46,8 +47,8 @@ reference/
 
 ### 2.1 Version selection (shared by all tools)
 
-- `sdk_version` is a **string** like `"0.163.x"`, `"0.163"`, or an exact
-  `"0.163.4"`.
+- `sdk_version` is a **string** like `"0.169.x"`, `"0.169"`, or an exact
+  `"0.169.1"`.
 - Resolution: normalize to the `sdk_<major.minor>.x` bucket → look up
   `reference/sdk_<major.minor>.x/`.
 - If the bucket is missing → tool returns a structured error
@@ -64,8 +65,9 @@ by version. No code change required for a data-only bump. Each directory's
 `PROVENANCE.md` records the upstream tag (`canvas-medical/canvas-plugins`) and
 the regeneration command, so the data is auditable and reproducible.
 
-> The pinned baseline for the first cut is **`sdk_0.163.x`** per the contract.
-> (Upstream latest at spec time is 0.169.1; we pin deliberately.)
+> The pinned baseline for the first cut is **`sdk_0.169.x`** (upstream latest,
+> generated from tag `0.169.1`). Per the contract, an older bucket such as
+> `sdk_0.163.x` can be added later as a data-only drop.
 
 ---
 
@@ -75,8 +77,8 @@ All files are UTF-8 JSON with a top-level `"_meta"` block:
 
 ```json
 "_meta": {
-  "sdk_version": "0.163.x",
-  "generated_from": "canvas-medical/canvas-plugins@0.163.4",
+  "sdk_version": "0.169.x",
+  "generated_from": "canvas-medical/canvas-plugins@0.169.1",
   "generated_at": "2026-06-19",
   "doc_base": "https://docs.canvasmedical.com/sdk/"
 }
@@ -99,7 +101,7 @@ Drives `validate_canvas_capability`. Four catalogs keyed by kind.
     "BaseProtocol":       { "symbol": "canvas_sdk.protocols.BaseProtocol",          "status": "WORKAROUND", "replacement": "BaseHandler", "doc_ref": "sdk/handlers/", "note": "legacy alias; use BaseHandler" }
   },
   "events": {
-    "PRESCRIBE__POST_COMMIT": { "symbol": "EventType.PRESCRIBE__POST_COMMIT", "status": "SUPPORTED", "doc_ref": "sdk/events/" },
+    "OBSERVATION_CREATED": { "symbol": "EventType.OBSERVATION_CREATED", "status": "SUPPORTED", "doc_ref": "sdk/events/" },
     "...": {}
   },
   "effects": {
@@ -159,9 +161,15 @@ detection patterns the AST scanner uses.
 
 ### 3.3 `manifest_schema.json`
 
-A real **JSON Schema (draft 2020-12)** for `CANVAS_MANIFEST.json`. Validated by
-`validate_manifest` with `jsonschema`. Captures the shape confirmed from Canvas
-docs/examples:
+The **authoritative** schema, extracted verbatim from
+`canvas_cli/utils/validators/manifest_schema.py` at the pinned tag (so it always
+matches what the real CLI validates), with `$schema`/`title`/`_meta` added and
+validated by `validate_manifest` via `jsonschema` (Draft 2020-12). The real
+schema is richer than the illustrative shape below — it includes `variables`,
+`origins`/`url_permissions` (mutually exclusive), `questionnaires`, `commands`,
+`custom_data`, the full `applications.scope` enum, and `tags` enums; top-level
+`required` is `["sdk_version","plugin_version","name","description","components","tags","license","readme"]`.
+Illustrative excerpt:
 
 ```jsonc
 {
@@ -238,20 +246,22 @@ has a faithful backstop. Generated from the upstream
 `STANDARD_LIBRARY_MODULES` / `THIRD_PARTY_MODULES` / `CANVAS_MODULES` sets in
 `plugin_runner/sandbox.py` at the pinned tag.
 
+Faithful to the real `ALLOWED_MODULES` (a module → allowed-names map): the
+generator merges `STANDARD_LIBRARY_MODULES` + `THIRD_PARTY_MODULES` (AST-extracted
+from `plugin_runner/sandbox.py`) with `plugin_runner/allowed-module-imports.json`
+into a single `allowed_modules` dict. `["*"]` means any name from that module.
+
 ```json
 {
   "_meta": { ... },
-  "standard_library": ["__future__","abc","base64","collections","dataclasses","datetime","decimal","enum","functools","hashlib","hmac","http","html","json","operator","random","re","string","time","traceback","typing","urllib","uuid","zoneinfo"],
-  "defused": ["defusedxml.ElementTree"],
-  "third_party": ["arrow","django.contrib.postgres.indexes","django.db","django.db.models","django.db.models.expressions","django.db.models.functions","django.db.models.query","django.utils.functional","jwt","pydantic","rapidfuzz","requests"],
-  "canvas_modules": {
-    "canvas_sdk.effects": ["Effect","EffectType","_BaseEffect"],
+  "allowed_modules": {
+    "__future__": ["annotations"],
+    "json": ["JSONDecodeError", "dumps", "loads"],
+    "requests": ["*"],
     "canvas_sdk.handlers": ["BaseHandler"],
-    "canvas_sdk.commands": ["*"],
-    "canvas_sdk.v1.data": ["*"],
-    "canvas_sdk.caching.client": ["get_cache"]
+    "canvas_sdk.v1.data": ["*"]
   },
-  "forbidden_name_rules": {
+  "name_rules": {
     "no_leading_underscore": true,
     "no_dunder_assignment_except": ["__all__"],
     "no_star_import_from_unlisted": true
@@ -298,7 +308,7 @@ Common response envelope:
 ```json
 {
   "tool": "<name>",
-  "sdk_version": "0.163.x",
+  "sdk_version": "0.169.x",
   "ok": true,
   "result": "<tool-specific verdict>",
   "findings": [ { "...": "evidence object" } ],
@@ -392,11 +402,13 @@ canvas-sdk-tools/
 ├── src/
 │   └── canvas_sdk_tools/
 │       ├── __init__.py
+│       ├── __main__.py           # python -m canvas_sdk_tools
 │       ├── config.py             # pydantic-settings: MCP_AUTH_TOKEN, host, port, log level, default_sdk_version
 │       ├── app.py                # FastMCP server; bearer auth on /mcp; /healthz; structlog JSON; registers 5 tools
 │       ├── logging.py            # structlog JSON config (no PHI/code bodies at INFO)
 │       ├── reference.py          # version resolver + cached loader for reference/sdk_<ver>/*.json
-│       ├── evidence.py           # shared finding/envelope dataclasses + serializers
+│       ├── evidence.py           # shared finding/envelope builders
+│       ├── diff.py               # unified-diff -> new-side source (for the AST tools)
 │       └── tools/
 │           ├── __init__.py
 │           ├── capability.py     # validate_canvas_capability
@@ -405,7 +417,7 @@ canvas-sdk-tools/
 │           ├── sandbox.py        # check_sandbox_imports (RestrictedPython)
 │           └── field_names.py    # lint_canvas_field_names
 ├── reference/
-│   └── sdk_0.163.x/              # VERSION, PROVENANCE.md, + the 5 JSON files (§2–3)
+│   └── sdk_0.169.x/              # VERSION, PROVENANCE.md, + the 5 JSON files (§2–3)
 ├── scripts/
 │   └── regenerate_reference.py   # builds reference/sdk_<ver>/ from a canvas-plugins checkout (dev-time only; offline at runtime)
 └── tests/
@@ -430,7 +442,7 @@ HTTP client to Canvas, Canvas SDK runtime.
 
 ### Server shape (matches memory server)
 - `config.py` → `Settings(BaseSettings)` with `MCP_AUTH_TOKEN` (required),
-  `host`, `port`, `log_level`, `default_sdk_version="0.163.x"`. No Canvas creds.
+  `host`, `port`, `log_level`, `default_sdk_version="0.169.x"`. No Canvas creds.
 - `app.py` → `FastMCP` instance; bearer-token auth middleware on `/mcp`;
   unauthenticated `/healthz` returning `{status, version, supported_sdk}`;
   registers the five tools (+ optional `list_supported_versions`).
@@ -445,17 +457,17 @@ HTTP client to Canvas, Canvas SDK runtime.
   `good/` (expect pass) and `bad/` (expect specific findings) fixture pairs, and
   assert the reference loader rejects unknown versions.
 
-### Out of scope until approved
-Actual Python implementation, the populated `reference/sdk_0.163.x/*.json`
-data files, fixtures, and the workflow. This document + the scaffold plan are
-the spec-and-stop deliverable.
+### Delivered
+Server + analyzers, the populated `reference/sdk_0.169.x/*.json` data (generated
+from `canvas-plugins@0.169.1`), the regenerate script, fixtures, and the
+workflow are all in the repo. `pytest -q` and `ruff check .` pass.
 
 ---
 
 ## 6. Cross-cutting decisions (call out for review)
 
-1. **Pin = `0.163.x`** as the first vendored bucket (per contract), even though
-   upstream latest is 0.169.1. Adding 0.169.x later is a data-only drop.
+1. **Pin = `0.169.x`** as the first vendored bucket (upstream latest, tag
+   `0.169.1`). Adding an older bucket like `0.163.x` later is a data-only drop.
 2. **`RestrictedPython` is a runtime dependency** of this MCP — used only to
    *compile* (never `exec`) user code, which is the highest-fidelity sandbox
    check available offline.
