@@ -14,3 +14,6 @@ externalPort = 80
 
 [env]
 PYTHONPATH = "src"
+
+[agent]
+expertMode = true
