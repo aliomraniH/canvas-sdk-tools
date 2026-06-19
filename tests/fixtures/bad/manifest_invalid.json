@@ -1,0 +1,12 @@
+{
+  "sdk_version": "0.169.x",
+  "name": "missing-required-fields",
+  "components": {
+    "handlers": [
+      {
+        "description": "handler with no class field"
+      }
+    ]
+  },
+  "extra_unknown_field": true
+}

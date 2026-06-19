@@ -1,0 +1,22 @@
+{
+  "sdk_version": "0.169.x",
+  "plugin_version": "0.0.1",
+  "name": "example-plugin",
+  "description": "A well-formed manifest.",
+  "components": {
+    "handlers": [
+      {
+        "class": "example_plugin.handlers.my_handler:MyHandler",
+        "description": "Handles an event.",
+        "data_access": {
+          "event": "OBSERVATION_CREATED",
+          "read": ["Observation"],
+          "write": []
+        }
+      }
+    ]
+  },
+  "tags": {},
+  "license": "MIT",
+  "readme": "./README.md"
+}
