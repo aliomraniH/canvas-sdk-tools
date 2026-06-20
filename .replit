@@ -10,7 +10,7 @@ deploymentTarget = "vm"
 
 [[ports]]
 localPort = 8000
-externalPort = 80
+externalPort = 8000
 
 [env]
 PYTHONPATH = "src"
@@ -21,3 +21,27 @@ expertMode = true
 [nix]
 channel = "stable-25_05"
 packages = ["libxcrypt"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "MCP Server"
+
+[[workflows.workflow]]
+name = "MCP Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -m canvas_sdk_tools"
+waitForPort = 8000
+
+[workflows.workflow.metadata]
+outputType = "console"

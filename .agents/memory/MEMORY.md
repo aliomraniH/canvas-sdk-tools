@@ -1,0 +1,1 @@
+- [Replit port mapping side-effect](replit-port-mapping.md) — configureWorkflow rewrites .replit [[ports]] externalPort to 1:1, can clobber a hand-authored 8000→80 needed for root serving; no agent tool restores it.
