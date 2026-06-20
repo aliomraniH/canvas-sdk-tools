@@ -1,0 +1,47 @@
+# Replit Reserved VM B — canvas-sdk-tools (Tier 3, Canvas-only MCP).
+# Static / offline / stateless.  No database, no Canvas credentials.
+run = "python -m canvas_sdk_tools"
+entrypoint = "src/canvas_sdk_tools/__main__.py"
+modules = ["python-3.11"]
+
+[deployment]
+run = ["python", "-m", "canvas_sdk_tools"]
+deploymentTarget = "vm"
+
+[[ports]]
+localPort = 8000
+externalPort = 80
+
+[env]
+PYTHONPATH = "src"
+
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+packages = ["libxcrypt"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "MCP Server"
+
+[[workflows.workflow]]
+name = "MCP Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -m canvas_sdk_tools"
+waitForPort = 8000
+
+[workflows.workflow.metadata]
+outputType = "console"
