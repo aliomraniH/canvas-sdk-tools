@@ -105,8 +105,11 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         if request.url.path.startswith(self._prefix):
             header = request.headers.get("authorization", "")
-            expected = f"Bearer {self._token}"
-            if not header or header != expected:
+            # Primary: Authorization: Bearer <token> (CLI / Desktop clients).
+            # Fallback: ?token=<token> in the URL, for clients such as Claude
+            # Web whose connector UI cannot send a custom auth header.
+            query_token = request.query_params.get("token", "")
+            if header != f"Bearer {self._token}" and query_token != self._token:
                 return JSONResponse({"error": "unauthorized"}, status_code=401)
         return await call_next(request)
 
@@ -114,6 +117,11 @@ class BearerAuthMiddleware(BaseHTTPMiddleware):
 def build_app(settings: Settings | None = None):
     """Build the Starlette ASGI app with auth middleware (for serving)."""
     settings = settings or get_settings()
+    if not settings.mcp_auth_token.strip():
+        raise RuntimeError(
+            "MCP_AUTH_TOKEN must be set to a non-empty value; refusing to start "
+            "with an empty token (would allow ?token= bypass)."
+        )
     configure_logging(settings.log_level)
     mcp = build_mcp(settings)
     # Serve MCP at POST /mcp/ (trailing slash is the canonical path).
