@@ -105,7 +105,9 @@ def _literal_assign(source: str, varname: str) -> Any:
 # --------------------------------------------------------------------------- #
 # builders
 # --------------------------------------------------------------------------- #
-def build_capability_catalog(ck: Path, meta: dict) -> dict[str, Any]:
+def build_capability_catalog(
+    ck: Path, meta: dict, allowed_modules: dict[str, list[str]]
+) -> dict[str, Any]:
     events_proto = ck / "protobufs/canvas_generated/messages/events.proto"
     effects_proto = ck / "protobufs/canvas_generated/messages/effects.proto"
     data_init = ck / "canvas_sdk/v1/data/__init__.py"
@@ -138,6 +140,35 @@ def build_capability_catalog(ck: Path, meta: dict) -> dict[str, Any]:
         for name in _module_all(data_init)
     }
 
+    # commands + utils helpers come from the public import allowlist so the
+    # catalog stays in lock-step with what the sandbox actually exposes.
+    commands: dict[str, Any] = {}
+    for name in allowed_modules.get("canvas_sdk.commands", []):
+        if name == "*" or not name.endswith("Command"):
+            continue
+        commands.setdefault(
+            name,
+            {"symbol": f"canvas_sdk.commands.{name}", "status": "SUPPORTED",
+             "doc_ref": "sdk/commands/"},
+        )
+    commands = dict(sorted(commands.items()))
+
+    # utility helpers (canvas_sdk.utils.*, e.g. utils.http.Http); most-specific
+    # module wins so a re-exported name keeps its concrete dotted path.
+    functions: dict[str, Any] = {}
+    for mod in sorted(
+        (m for m in allowed_modules if m.startswith("canvas_sdk.utils")),
+        key=len, reverse=True,
+    ):
+        for name in allowed_modules[mod]:
+            if name == "*" or name.startswith("_"):
+                continue
+            functions.setdefault(
+                name,
+                {"symbol": f"{mod}.{name}", "status": "SUPPORTED", "doc_ref": "sdk/utils/"},
+            )
+    functions = dict(sorted(functions.items()))
+
     handler_base_classes: dict[str, Any] = {}
     for py in sorted(handlers_dir.rglob("*.py")):
         if py.name == "__init__.py":
@@ -161,7 +192,9 @@ def build_capability_catalog(ck: Path, meta: dict) -> dict[str, Any]:
         "handler_base_classes": handler_base_classes,
         "events": events,
         "effects": effects,
+        "commands": commands,
         "data_models": data_models,
+        "functions": functions,
         "aliases": {"Protocol": "BaseProtocol", "obs": "Observation"},
     }
 
@@ -236,19 +269,22 @@ def build_field_name_rules(meta: dict) -> dict[str, Any]:
     return {
         "_meta": meta,
         "attribute_renames": [
-            {"id": "obs-units", "wrong": "unit", "right": "units",
-             "applies_to": ["Observation", "obs"],
-             "message": "Observation uses `.units` (plural), not `.unit`.",
+            {"id": "obs-units", "wrong": "units", "right": "unit",
+             "applies_to": ["Observation", "obs", "measurement", "reading", "value"],
+             "message": "Observation/measurement fields use `.unit` (singular); "
+                        "`.units` is not a real SDK attribute.",
+             "doc_ref": "sdk/data/"},
+            {"id": "weight-lb", "wrong": "lb", "right": "oz / kg", "applies_to": [],
+             "message": "Weights are stored in oz/kg; `.lb` is not an SDK attribute.",
              "doc_ref": "sdk/data/"},
         ],
         "kwarg_renames": [
-            {"id": "dbid-in", "wrong": "id__in", "right": "dbid__in",
-             "message": "Filter on `dbid__in`, not `id__in`.", "doc_ref": "sdk/data/"},
+            {"id": "dbid-in", "wrong": "dbid__in", "right": "id__in", "family": "dbid",
+             "message": "Filter on the public `id` field (e.g. `id__in=`), not the "
+                        "internal `dbid` (`dbid`/`dbid__*` lookups).",
+             "doc_ref": "sdk/data/"},
         ],
-        "value_literals": [
-            {"id": "weight-unit", "field": "units", "wrong": "lbs", "right": "lb",
-             "message": "Weight unit literal is `lb`, not `lbs`.", "doc_ref": "sdk/data/"},
-        ],
+        "value_literals": [],
         "required_pragmas": [
             {"id": "future-annotations", "require": "from __future__ import annotations",
              "scope": "module",
@@ -262,6 +298,11 @@ def build_field_name_rules(meta: dict) -> dict[str, Any]:
              "message": "Use `.get('_key')` for underscore-prefixed keys; "
                         "subscripting underscore keys is rejected by the sandbox.",
              "doc_ref": "sdk/"},
+            {"id": "unguarded-get", "pattern": "unguarded_objects_get",
+             "right": "wrap in try/except Model.DoesNotExist (or use .filter(...).first())",
+             "message": "`<Model>.objects.get(...)` raises `DoesNotExist`; guard it with "
+                        "try/except `Model.DoesNotExist` or use `.filter(...).first()`.",
+             "doc_ref": "sdk/data/"},
         ],
     }
 
@@ -280,9 +321,12 @@ def main() -> None:
     out_dir = args.out / f"sdk_{args.version}"
     out_dir.mkdir(parents=True, exist_ok=True)
 
+    allowlist = build_import_allowlist(ck, meta)
     files = {
-        "capability_catalog.json": build_capability_catalog(ck, meta),
-        "import_allowlist.json": build_import_allowlist(ck, meta),
+        "capability_catalog.json": build_capability_catalog(
+            ck, meta, allowlist["allowed_modules"]
+        ),
+        "import_allowlist.json": allowlist,
         "manifest_schema.json": build_manifest_schema(ck, meta),
         "fhir_rules.json": build_fhir_rules(meta),
         "field_name_rules.json": build_field_name_rules(meta),

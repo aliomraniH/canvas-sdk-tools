@@ -8833,6 +8833,208 @@
       "doc_ref": "sdk/effects/"
     }
   },
+  "commands": {
+    "AdjustPrescriptionCommand": {
+      "symbol": "canvas_sdk.commands.AdjustPrescriptionCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "AllergyCommand": {
+      "symbol": "canvas_sdk.commands.AllergyCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "AssessCommand": {
+      "symbol": "canvas_sdk.commands.AssessCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "ChartSectionReviewCommand": {
+      "symbol": "canvas_sdk.commands.ChartSectionReviewCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "CloseGoalCommand": {
+      "symbol": "canvas_sdk.commands.CloseGoalCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "CustomCommand": {
+      "symbol": "canvas_sdk.commands.CustomCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "DiagnoseCommand": {
+      "symbol": "canvas_sdk.commands.DiagnoseCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "FamilyHistoryCommand": {
+      "symbol": "canvas_sdk.commands.FamilyHistoryCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "FollowUpCommand": {
+      "symbol": "canvas_sdk.commands.FollowUpCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "GoalCommand": {
+      "symbol": "canvas_sdk.commands.GoalCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "HistoryOfPresentIllnessCommand": {
+      "symbol": "canvas_sdk.commands.HistoryOfPresentIllnessCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "ImagingOrderCommand": {
+      "symbol": "canvas_sdk.commands.ImagingOrderCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "ImagingReviewCommand": {
+      "symbol": "canvas_sdk.commands.ImagingReviewCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "InstructCommand": {
+      "symbol": "canvas_sdk.commands.InstructCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "LabOrderCommand": {
+      "symbol": "canvas_sdk.commands.LabOrderCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "LabReviewCommand": {
+      "symbol": "canvas_sdk.commands.LabReviewCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "MedicalHistoryCommand": {
+      "symbol": "canvas_sdk.commands.MedicalHistoryCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "MedicationStatementCommand": {
+      "symbol": "canvas_sdk.commands.MedicationStatementCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "POCLabTestCommand": {
+      "symbol": "canvas_sdk.commands.POCLabTestCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "PastSurgicalHistoryCommand": {
+      "symbol": "canvas_sdk.commands.PastSurgicalHistoryCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "PerformCommand": {
+      "symbol": "canvas_sdk.commands.PerformCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "PhysicalExamCommand": {
+      "symbol": "canvas_sdk.commands.PhysicalExamCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "PlanCommand": {
+      "symbol": "canvas_sdk.commands.PlanCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "PrescribeCommand": {
+      "symbol": "canvas_sdk.commands.PrescribeCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "QuestionnaireCommand": {
+      "symbol": "canvas_sdk.commands.QuestionnaireCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "ReasonForVisitCommand": {
+      "symbol": "canvas_sdk.commands.ReasonForVisitCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "ReferCommand": {
+      "symbol": "canvas_sdk.commands.ReferCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "ReferenceCommand": {
+      "symbol": "canvas_sdk.commands.ReferenceCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "ReferralReviewCommand": {
+      "symbol": "canvas_sdk.commands.ReferralReviewCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "RefillCommand": {
+      "symbol": "canvas_sdk.commands.RefillCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "RemoveAllergyCommand": {
+      "symbol": "canvas_sdk.commands.RemoveAllergyCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "ResolveConditionCommand": {
+      "symbol": "canvas_sdk.commands.ResolveConditionCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "ReviewOfSystemsCommand": {
+      "symbol": "canvas_sdk.commands.ReviewOfSystemsCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "StopMedicationCommand": {
+      "symbol": "canvas_sdk.commands.StopMedicationCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "StructuredAssessmentCommand": {
+      "symbol": "canvas_sdk.commands.StructuredAssessmentCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "TaskCommand": {
+      "symbol": "canvas_sdk.commands.TaskCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "UncategorizedDocumentReviewCommand": {
+      "symbol": "canvas_sdk.commands.UncategorizedDocumentReviewCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "UpdateDiagnosisCommand": {
+      "symbol": "canvas_sdk.commands.UpdateDiagnosisCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "UpdateGoalCommand": {
+      "symbol": "canvas_sdk.commands.UpdateGoalCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    },
+    "VitalsCommand": {
+      "symbol": "canvas_sdk.commands.VitalsCommand",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/commands/"
+    }
+  },
   "data_models": {
     "Application": {
       "symbol": "canvas_sdk.v1.data.Application",
@@ -9878,6 +10080,68 @@
       "symbol": "canvas_sdk.v1.data.proxy_field",
       "status": "SUPPORTED",
       "doc_ref": "sdk/data/"
+    }
+  },
+  "functions": {
+    "Http": {
+      "symbol": "canvas_sdk.utils.http.Http",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "PdfAuthRequest": {
+      "symbol": "canvas_sdk.utils.pdf.PdfAuthRequest",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "ThreadPoolExecutor": {
+      "symbol": "canvas_sdk.utils.http.ThreadPoolExecutor",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "batch_get": {
+      "symbol": "canvas_sdk.utils.http.batch_get",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "batch_patch": {
+      "symbol": "canvas_sdk.utils.http.batch_patch",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "batch_post": {
+      "symbol": "canvas_sdk.utils.http.batch_post",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "batch_put": {
+      "symbol": "canvas_sdk.utils.http.batch_put",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "ontologies_http": {
+      "symbol": "canvas_sdk.utils.http.ontologies_http",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "pdf_generator": {
+      "symbol": "canvas_sdk.utils.pdf.pdf_generator",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "pharmacy_http": {
+      "symbol": "canvas_sdk.utils.http.pharmacy_http",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "science_http": {
+      "symbol": "canvas_sdk.utils.http.science_http",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
+    },
+    "thread_cleanup": {
+      "symbol": "canvas_sdk.utils.db.thread_cleanup",
+      "status": "SUPPORTED",
+      "doc_ref": "sdk/utils/"
     }
   },
   "aliases": {

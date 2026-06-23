@@ -1,0 +1,59 @@
+Fix spec for canvas-sdk-tools MCP (SDK 0.169.x)
+Issue 1 — field_names only implements 1 of its 5 advertised checks
+
+Symptom. The tool description claims it lints obs.units, dbid__in, lb, __future__, and .get. In reality only the __future__ pragma check fires; the other four return no findings.
+
+Reproductions (current → wrong):
+
+# Input A — has __future__ pragma + 4 traps  →  returns CLEAN (wrong)
+from __future__ import annotations
+obs = Observation.objects.filter(dbid__in=[1,2,3])
+weight = obs.units
+val = weight.lb
+cond = Condition.objects.get(id=patient_id)
+
+# Input B — no pragma, has traps  →  ONLY flags missing pragma (misses the rest)
+obs.units
+
+Expected findings (each its own rule_id, severity error or warning, with line/col):
+Trap	What to detect	Suggested fix message
+dbid__in	any QuerySet kwarg using dbid__in (and bare dbid lookups)	use id__in= / the model's public id field, not the internal dbid
+obs.units	attribute access .units on an Observation/measurement object	use .unit (singular) — .units doesn't exist on the SDK model
+.lb	attribute access .lb (pounds) on a value	weights are stored in oz/kg; .lb is not a field
+.get	<Model>.objects.get(...) not wrapped in try/except DoesNotExist	wrap in try/except Model.DoesNotExist or use .filter(...).first()
+__future__	already works — keep it	—
+
+Implementation approach. Do it with ast, not regex (the description implies static parsing — checked.parsed is already returned):
+
+    Walk the tree once. For ast.Attribute nodes, match .attr in {"units", "lb"} → emit the matching rule. (Scope .units/.lb to attribute access so string literals don't false-positive.)
+    For ast.Call whose func is an ast.Attribute named get, and the receiver chain ends in .objects → emit the unguarded-.get rule only if the call isn't inside an ast.Try whose handlers reference DoesNotExist (walk parent stack or pre-index try bodies).
+    For keyword arguments / ast.keyword and Compare/Subscript lookups, detect identifiers ending in dbid__in or __dbid → emit the dbid rule.
+    Keep each rule independently toggleable so one trap firing doesn't suppress the others (the current bug looks like an early-return after the pragma check).
+
+Acceptance tests (add as fixtures):
+
+    Input A above → 4 findings (dbid, units, lb, unguarded-get), result: "ISSUES".
+    Input B above → 2 findings (missing pragma + units).
+    A clean module (from __future__ import annotations + guarded .get in try/except + .unit + id__in) → CLEAN.
+    Regression: "units" as a dict key or string literal → no units finding.
+
+Issue 2 — capability catalog is incomplete (real effects read as UNSUPPORTED)
+
+Symptom. capability("canvas_sdk.effects.banner_alert.AddBannerAlert") → UNSUPPORTED / reason: not_in_catalog, even though it's a real, supported effect in the vendored SDK.
+
+Root cause (likely). The catalog is a hand-maintained allowlist that has drifted from the vendored canvas_sdk source the tool already ships (supported_versions reports 0.169.x).
+
+Fix — generate the catalog from the vendored SDK instead of hand-maintaining it:
+
+    At build/startup, import-walk (or AST-walk) the vendored canvas_sdk/ tree and index every public symbol's dotted path (classes/functions under effects/, commands/, handlers/, v1/data/).
+    capability(symbol) resolves against that generated index. If the dotted path exists → SUPPORTED; only return not_in_catalog for paths genuinely absent from the vendored source.
+    When a symbol is missing, populate suggestions via close-match (e.g. difflib.get_close_matches) against the index — currently it returns an empty suggestions: [].
+    Keep the curated layer only for semantic statuses the source can't express (DEPRECATED / WORKAROUND), and have it override the generated SUPPORTED/UNSUPPORTED.
+
+Acceptance tests:
+
+    capability("canvas_sdk.effects.banner_alert.AddBannerAlert") → SUPPORTED.
+    A sampling of symbols from CLAUDE.md (canvas_sdk.handlers.BaseHandler, canvas_sdk.commands.GoalCommand, canvas_sdk.v1.data.Patient, canvas_sdk.utils.http.Http) → all SUPPORTED.
+    A genuinely fake symbol (canvas_sdk.effects.banner_alert.NotARealThing) → UNSUPPORTED / not_in_catalog with non-empty suggestions.
+    Catalog-size assertion: generated index count ≫ current hard-coded count (guards against silent drift).
+

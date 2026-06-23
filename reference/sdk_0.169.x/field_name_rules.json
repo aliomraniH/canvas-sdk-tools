@@ -8,35 +8,38 @@
   "attribute_renames": [
     {
       "id": "obs-units",
-      "wrong": "unit",
-      "right": "units",
+      "wrong": "units",
+      "right": "unit",
       "applies_to": [
         "Observation",
-        "obs"
+        "obs",
+        "measurement",
+        "reading",
+        "value"
       ],
-      "message": "Observation uses `.units` (plural), not `.unit`.",
+      "message": "Observation/measurement fields use `.unit` (singular); `.units` is not a real SDK attribute.",
+      "doc_ref": "sdk/data/"
+    },
+    {
+      "id": "weight-lb",
+      "wrong": "lb",
+      "right": "oz / kg",
+      "applies_to": [],
+      "message": "Weights are stored in oz/kg; `.lb` is not an SDK attribute.",
       "doc_ref": "sdk/data/"
     }
   ],
   "kwarg_renames": [
     {
       "id": "dbid-in",
-      "wrong": "id__in",
-      "right": "dbid__in",
-      "message": "Filter on `dbid__in`, not `id__in`.",
+      "wrong": "dbid__in",
+      "right": "id__in",
+      "family": "dbid",
+      "message": "Filter on the public `id` field (e.g. `id__in=`), not the internal `dbid` (`dbid`/`dbid__*` lookups).",
       "doc_ref": "sdk/data/"
     }
   ],
-  "value_literals": [
-    {
-      "id": "weight-unit",
-      "field": "units",
-      "wrong": "lbs",
-      "right": "lb",
-      "message": "Weight unit literal is `lb`, not `lbs`.",
-      "doc_ref": "sdk/data/"
-    }
-  ],
+  "value_literals": [],
   "required_pragmas": [
     {
       "id": "future-annotations",
@@ -53,6 +56,13 @@
       "right": ".get()",
       "message": "Use `.get('_key')` for underscore-prefixed keys; subscripting underscore keys is rejected by the sandbox.",
       "doc_ref": "sdk/"
+    },
+    {
+      "id": "unguarded-get",
+      "pattern": "unguarded_objects_get",
+      "right": "wrap in try/except Model.DoesNotExist (or use .filter(...).first())",
+      "message": "`<Model>.objects.get(...)` raises `DoesNotExist`; guard it with try/except `Model.DoesNotExist` or use `.filter(...).first()`.",
+      "doc_ref": "sdk/data/"
     }
   ]
 }

@@ -1,1 +1,2 @@
 - [Replit port mapping side-effect](replit-port-mapping.md) — configureWorkflow rewrites .replit [[ports]] externalPort to 1:1, can clobber a hand-authored 8000→80 needed for root serving; no agent tool restores it.
+- [canvas-sdk-tools reference generation](canvas-sdk-tools-reference.md) — reference/ JSON is emitted by scripts/regenerate_reference.py; edit the generator too or a regen reverts you. capability lookup matches on the query leaf.
