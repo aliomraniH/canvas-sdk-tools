@@ -116,7 +116,10 @@ def build_app(settings: Settings | None = None):
     settings = settings or get_settings()
     configure_logging(settings.log_level)
     mcp = build_mcp(settings)
-    app = mcp.http_app()
+    # Serve MCP at POST /mcp/ (trailing slash is the canonical path).
+    # stateless_http=True keeps every request independent so the service is safe
+    # behind an autoscale deployment (no in-memory session affinity required).
+    app = mcp.http_app(path="/mcp/", stateless_http=True)
     app.add_middleware(BearerAuthMiddleware, token=settings.mcp_auth_token)
     return app, settings
 

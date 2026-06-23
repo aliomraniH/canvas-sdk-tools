@@ -6,7 +6,7 @@ modules = ["python-3.11"]
 
 [deployment]
 run = ["python", "-m", "canvas_sdk_tools"]
-deploymentTarget = "vm"
+deploymentTarget = "autoscale"
 
 [[ports]]
 localPort = 8000
