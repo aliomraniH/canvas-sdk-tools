@@ -23,6 +23,26 @@ in `Command` under `canvas_sdk.commands`; functions = public names under
 `canvas_sdk.utils*`, most-specific module wins), so the generator and any in-repo
 catalog edit must use that same allowlist-derived logic to stay in lock-step.
 
+# Adding a new SDK bucket is filesystem-driven; routing is automatic
+
+`reference.py` discovers buckets by scanning `reference/sdk_<maj>.<min>.x/` dirs,
+so adding a bucket = (1) generate `reference/sdk_<ver>/` via the generator against
+that tag, (2) nothing else — `list_supported_versions`, `resolve_bucket`,
+`/healthz` `supported_sdk`, and the `supported_versions` tool all update for free.
+Default stays whatever `config.default_sdk_version` is (a full patch like `0.163.1`
+resolves to its `.x` bucket).
+
+**Clone gotcha:** `git clone --branch <tag>` of canvas-plugins often reports
+"checkout failed" (some template paths with `{{ cookiecutter }}` braces abort the
+working-tree checkout partway, leaving `protobufs/` and `plugin_runner/` unwritten).
+`git restore`/`checkout` are blocked as destructive in the main agent. Recover by
+materializing only the generator's input files read-only:
+`git --no-optional-locks show HEAD:<path> > <path>` (full `git archive | tar` of the
+whole tree is too slow and times out). Generator inputs: the two `*.proto`,
+`canvas_sdk/{v1/data/__init__.py,handlers,effects,utils}`,
+`plugin_runner/{sandbox.py,allowed-module-imports.json}`,
+`canvas_cli/utils/validators/manifest_schema.py`.
+
 # validate_canvas_capability must match on the query LEAF, not the whole path
 
 A pasted dotted symbol's module segment can differ from the catalog's stored

@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "sdk_version": "0.163.x",
+    "generated_from": "canvas-medical/canvas-plugins@0.163.1",
+    "generated_at": "2026-06-23",
+    "doc_base": "https://docs.canvasmedical.com/sdk/"
+  },
+  "resources": {
+    "Observation": {
+      "allowed": [
+        "create",
+        "read",
+        "search"
+      ],
+      "forbidden": [
+        "update",
+        "patch",
+        "delete"
+      ],
+      "rationale": "Observations are immutable clinical records; corrections are recorded as new Observations.",
+      "doc_ref": "api/observation/"
+    },
+    "DiagnosticReport": {
+      "allowed": [
+        "create",
+        "read",
+        "search"
+      ],
+      "forbidden": [
+        "update",
+        "patch",
+        "delete"
+      ],
+      "rationale": "Diagnostic reports are immutable once created.",
+      "doc_ref": "api/diagnosticreport/"
+    }
+  },
+  "interaction_map": {
+    "put": "update",
+    "patch": "patch",
+    "delete": "delete",
+    "post": "create",
+    "get": "read",
+    "update": "update",
+    "save": "update"
+  },
+  "detection": {
+    "http_methods": [
+      "put",
+      "patch",
+      "delete"
+    ],
+    "orm_mutators": [
+      "save",
+      "update",
+      "delete"
+    ],
+    "url_resource_regex": "/([A-Z][A-Za-z]+)(?:/[^/\\\"']+)?/?$",
+    "note": "Static call-site signals only."
+  }
+}

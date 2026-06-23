@@ -87,6 +87,23 @@ def test_fake_dotted_symbol_unsupported_with_suggestions():
     assert len(out["suggestions"]) > 0
 
 
+def test_capability_resolves_0_163_x_bucket():
+    # A full patch version for the older bucket must route to sdk_0.163.x
+    # instead of returning unsupported_sdk_version.
+    out = validate_canvas_capability("canvas_sdk.commands.GoalCommand", "0.163.1")
+    assert out["ok"] is True
+    assert out["sdk_version"] == "0.163.x"
+    assert out["result"] == "SUPPORTED"
+    assert out["symbol"] == "canvas_sdk.commands.GoalCommand"
+
+
+def test_both_versions_supported():
+    out = validate_canvas_capability("Observation", "9.9.x")
+    assert out["ok"] is False
+    assert "0.163.x" in out["supported"]
+    assert "0.169.x" in out["supported"]
+
+
 def test_catalog_is_comprehensive():
     _, catalog = load(SDK_VERSION, "capability_catalog.json")
     kinds = (
