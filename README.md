@@ -70,3 +70,14 @@ python -m canvas_sdk_tools
 
 Serves MCP at `/mcp` (bearer auth) and an unauthenticated `/healthz`.
 The operator stands up Reserved VM B and sets `MCP_AUTH_TOKEN`.
+
+## Deployment
+
+Live as a Replit Reserved VM:
+
+- **MCP endpoint:** `https://canvas-sdk-tools.replit.app/mcp` (Streamable HTTP,
+  `Authorization: Bearer <MCP_AUTH_TOKEN>`)
+- **Health:** `https://canvas-sdk-tools.replit.app/healthz` (no auth)
+
+See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for client setup (Claude Web / CLI), live
+verification results, what changed for deployment, and the project structure.
