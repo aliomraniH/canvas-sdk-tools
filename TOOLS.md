@@ -89,7 +89,9 @@ evidence rather than bare assertions.
 
 ### 3.1 `capability_catalog.json`
 
-Drives `validate_canvas_capability`. Four catalogs keyed by kind.
+Drives `validate_canvas_capability`. Six catalogs keyed by kind
+(`handler_base_classes`, `data_models`, `commands`, `effects`, `events`,
+`functions`), plus an `aliases` map.
 
 ```json
 {
@@ -114,6 +116,14 @@ Drives `validate_canvas_capability`. Four catalogs keyed by kind.
     "Patient":     { "symbol": "canvas_sdk.v1.data.Patient",     "status": "SUPPORTED", "doc_ref": "sdk/data-patient/" },
     "...": {}
   },
+  "commands": {
+    "GoalCommand": { "symbol": "canvas_sdk.commands.GoalCommand", "status": "SUPPORTED", "doc_ref": "sdk/commands/" },
+    "...": {}
+  },
+  "functions": {
+    "Http": { "symbol": "canvas_sdk.utils.http.Http", "status": "SUPPORTED", "doc_ref": "sdk/utils/" },
+    "...": {}
+  },
   "aliases": { "Protocol": "BaseProtocol", "obs": "Observation" }
 }
 ```
@@ -124,7 +134,9 @@ Drives `validate_canvas_capability`. Four catalogs keyed by kind.
 - Catalog contents are generated from the pinned tag: events from
   `canvas_generated.messages.events_pb2.EventType`; effects from
   `canvas_sdk/effects/`; data models from `canvas_sdk/v1/data/`; handler base
-  classes from `canvas_sdk/handlers/`.
+  classes from `canvas_sdk/handlers/`; commands and functions from the public
+  import allowlist (`commands` = `*Command` symbols under `canvas_sdk.commands`;
+  `functions` = public names under `canvas_sdk.utils*`).
 
 ### 3.2 `fhir_rules.json`
 
@@ -320,11 +332,17 @@ Common response envelope:
 
 - **Checks:** whether `feature_or_symbol` exists in `capability_catalog.json`
   for the resolved version. Resolves through `aliases` first, then searches all
-  four catalogs (handler base classes, events, effects, data models).
+  six catalogs (handler base classes, data models, commands, effects, events,
+  functions). Accepts a bare name or a fully dotted symbol: matching is by exact
+  key, then by **leaf name** (the trailing `.`-segment), then by a catalog
+  entry's trailing symbol segment — so a pasted module path that differs from the
+  catalog's stored symbol (e.g. `effects.banner_alert.AddBannerAlert` vs the real
+  `effects.add_banner_alert.AddBannerAlert`) still resolves.
 - **Returns:** `result` ∈ `SUPPORTED` | `UNSUPPORTED` | `WORKAROUND`, plus the
   matched `symbol`, `doc_ref`, and (for `WORKAROUND`) `replacement`/`note`.
   Unknown symbol → `UNSUPPORTED` with `"reason": "not_in_catalog"` and nearest
-  catalog suggestions (fuzzy match over keys, no network).
+  catalog suggestions (fuzzy match over keys; falls back to matching distinctive
+  path segments against catalog symbols — no network).
 - **Evidence:** the catalog `symbol` + `doc_ref`.
 
 ### 4.2 `check_fhir_immutability(code_or_diff)`
